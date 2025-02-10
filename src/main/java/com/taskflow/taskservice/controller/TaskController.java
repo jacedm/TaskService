@@ -2,14 +2,20 @@ package com.taskflow.taskservice.controller;
 
 import com.taskflow.taskservice.dto.request.TaskRequest;
 import com.taskflow.taskservice.dto.response.TaskResponse;
+import com.taskflow.taskservice.enums.TaskStatus;
 import com.taskflow.taskservice.service.TaskService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/tasks")
@@ -29,8 +35,13 @@ public class TaskController {
     }
 
     @GetMapping
-    public List<TaskResponse> getAllTasks() {
-        return taskService.getAllTasks();
+    public Page<TaskResponse> getTasks(
+            @RequestParam(required = false) TaskStatus status,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to,
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return taskService.getFilteredTasks(status, from, to, pageable);
     }
 
     @PutMapping("/{id}")

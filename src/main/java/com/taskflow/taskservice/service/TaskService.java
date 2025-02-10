@@ -3,15 +3,19 @@ package com.taskflow.taskservice.service;
 import com.taskflow.taskservice.dto.request.TaskRequest;
 import com.taskflow.taskservice.dto.response.TaskResponse;
 import com.taskflow.taskservice.entity.Task;
+import com.taskflow.taskservice.enums.TaskStatus;
 import com.taskflow.taskservice.exception.TaskNotFoundException;
 import com.taskflow.taskservice.mapper.TaskMapper;
 import com.taskflow.taskservice.repository.TaskRepository;
+import com.taskflow.taskservice.repository.spec.TaskSpecification;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -34,10 +38,17 @@ public class TaskService {
         );
     }
 
-    public List<TaskResponse> getAllTasks() {
-        return taskRepository.findAll().stream()
-                .map(taskMapper::toResponse)
-                .collect(Collectors.toList());
+    public Page<TaskResponse> getFilteredTasks(TaskStatus status,
+                                               LocalDateTime from,
+                                               LocalDateTime to,
+                                               Pageable pageable) {
+
+        Specification<Task> spec = Specification
+                .where(TaskSpecification.hasStatus(status))
+                .and(TaskSpecification.createdAfter(from))
+                .and(TaskSpecification.createdBefore(to));
+
+        return taskRepository.findAll(spec, pageable).map(taskMapper::toResponse);
     }
 
     @Transactional
@@ -47,15 +58,10 @@ public class TaskService {
 
         taskMapper.updateTask(taskRequest, task);
 
-        return taskMapper.toResponse(taskRepository.save(task));
+        return taskMapper.toResponse(task);
     }
 
-    @Transactional
     public void deleteTask(Long id) {
-        if (!taskRepository.existsById(id)) {
-            throw new TaskNotFoundException("Task not found");
-        }
-
         taskRepository.deleteById(id);
     }
 }
