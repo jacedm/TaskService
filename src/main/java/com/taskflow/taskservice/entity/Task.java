@@ -2,7 +2,9 @@ package com.taskflow.taskservice.entity;
 
 import com.taskflow.taskservice.enums.TaskStatus;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -13,8 +15,6 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder(toBuilder = true)
 public class Task {
 
     @Id
@@ -23,20 +23,20 @@ public class Task {
     private Long id;
 
     @Column(name = "title", nullable = false, length = 100)
-    String title;
+    private String title;
 
     @Column(name = "description", nullable = false)
-    String description;
+    private String description;
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
-    TaskStatus status;
+    private TaskStatus status;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
-    LocalDateTime createdAt;
+    private LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
-    LocalDateTime updatedAt;
+    private LocalDateTime updatedAt;
 }
